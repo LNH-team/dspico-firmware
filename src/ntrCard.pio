@@ -1,0 +1,67 @@
+.program ntr_card
+.side_set 3 opt pindirs
+
+.define PIN_CEB 10
+.define PIN_WREB 11
+
+.wrap_target
+start:
+    set pindirs, 0x00   side 0  ; set the bus to input
+
+    wait 1 gpio PIN_CEB
+    wait 0 gpio PIN_CEB
+
+    set x, 7
+cmd_loop:
+    wait 0 gpio PIN_WREB
+    wait 1 gpio PIN_WREB
+    in pins, 8
+    jmp x-- cmd_loop
+
+    out x, 31 ; payload length
+    out y, 1 ; direction
+
+    jmp !x start ;end
+
+    jmp !y write
+
+read_loop:
+    wait 0 gpio PIN_WREB
+    wait 1 gpio PIN_WREB
+    in pins, 8
+    jmp x-- read_loop
+
+    jmp start
+
+write:
+    pull ifempty
+    set pindirs, 0x1F   side 0x7 [1]  ; set the bus to output
+
+write_loop:
+    wait 0 gpio PIN_WREB
+    nop [1]
+    out pins, 8 [1]
+    wait 1 gpio PIN_WREB
+    jmp x-- write_loop
+
+.wrap
+
+.program ntr_card_spi
+.side_set 2 opt pindirs
+
+.define PIN_WREB 11
+.define PIN_CS2 21
+
+.wrap_target
+spi_start:
+    wait 1 gpio PIN_CS2     side 0
+    wait 0 gpio PIN_CS2
+
+    set x, 7
+spi_loop:
+    wait 0 gpio PIN_WREB    side 1
+    out pins, 1
+    wait 1 gpio PIN_WREB
+    in pins, 1
+    jmp x-- spi_loop
+.wrap
