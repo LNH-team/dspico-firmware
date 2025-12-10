@@ -3,6 +3,7 @@
 Debug/
 Release/
 build/
+cmake-build*/
 out/
 
 # Compiled source #

@@ -11,6 +11,14 @@
 
 set -euo pipefail
 
+if command -v nproc >/dev/null 2>&1; then
+	NPROC="$(nproc)"
+else
+	# macOS doesn't have nproc(1). using getconf here is also more general than
+	# using sysctl
+	NPROC="$(getconf _NPROCESSORS_ONLN)"
+fi
+
 # change directory to the one containing the source code project
 cd "$(dirname "$(realpath "$0")")"
 
@@ -35,7 +43,7 @@ echo "[>] Building FIRMWARE: "
 # Go and build the firmware
 PICO_SDK_PATH=../pico-sdk \
 CMAKE_POLICY_VERSION_MINIMUM=3.5 \
-CMAKE_BUILD_PARALLEL_LEVEL="$(nproc)" \
+CMAKE_BUILD_PARALLEL_LEVEL="${NPROC}" \
 	cmake --build build
 
 echo "[>] Build completed. Find the DSpico.uf2 file inside build/ folder"
