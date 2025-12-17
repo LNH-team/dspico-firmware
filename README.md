@@ -40,9 +40,10 @@ For an overview of the supported card commands, see [commands.md](docs/commands.
 We recommend using WSL (Windows Subsystem for Linux), or a Unix-based machine to compile this repository.
 The steps provided will assume a Linux environment. Alternatively, you can run the `setup_environment.sh` bash script.
 
- 1. Run `sudo  apt  update && sudo  apt  install  cmake  gcc-arm-none-eabi  build-essential  git`
- 2. Clone this repository
- 3. Run the following commands:
+ 1. Run `sudo apt update && sudo apt install cmake gcc-arm-none-eabi build-essential git`
+    - On Debian-Based Linux Distros you may need to additionally install the `libstdc++-arm-none-eabi-newlib` package.
+ 3. Clone this repository
+ 4. Run the following commands:
     ```bash
     git submodule update --init
     cd pico-sdk
