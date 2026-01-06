@@ -132,10 +132,15 @@ static void initSd(void)
     bool ok = false;
     for (int i = 0; i < 16; i++)
     {
-        if (f_mount(&sFatFs, "0:", 1) == FR_OK)
+        FRESULT sd_mount = f_mount(&sFatFs, "0:", 1);
+        if (sd_mount == FR_OK)
         {
             ok = true;
             sIsSdCardMounted = true;
+            break;
+        }
+        else if (sd_mount == FR_NO_FILESYSTEM)
+        {
             break;
         }
     }
