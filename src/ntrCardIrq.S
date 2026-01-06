@@ -190,7 +190,7 @@ gGameNoScrambleCmd0HandlerTable:
 .endr
     .word ntrc_gameNoScrambleCmd0Dummy //E0
     .word ntrc_gameNoScrambleCmd0Dummy //E1
-    .word ntrc_gameNoScrambleCmd0Dummy //E2
+    .word ntrc_gameGetSdSectCntCmd0 //E2
     .word ntrc_gameNoScrambleCmd0Dummy //E3
     .word ntrc_gameGetSdStatCmd0 //E4
     .word ntrc_gameGetSdDataCmd0 //E5
@@ -305,7 +305,7 @@ gGameNoScrambleCmd1HandlerTable:
 .endr
     .word ntrc_gameNoScrambleCmd1Unknown //E0
     .word ntrc_gameNoScrambleCmd1Unknown //E1
-    .word ntrc_gameNoScrambleCmd1Unknown //E2
+    .word ntrc_gameNoScrambleCmd1Dummy4 //E2
     .word ntrc_gameReqSdReadCmd1 //E3
     .word ntrc_gameNoScrambleCmd1Dummy4 //E4
     .word ntrc_gameGetSdDataCmd1 //E5
