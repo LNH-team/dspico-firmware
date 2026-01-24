@@ -4,6 +4,7 @@
 #include "hardware/gpio.h"
 #include "hardware/dma.h"
 #include "hardware/structs/scb.h"
+#include "hardware/structs/systick.h"
 #include "pico/binary_info.h"
 #include "ntrCard.pio.h"
 #include "romData.h"
@@ -30,8 +31,27 @@ static void setRomToDsiRom(void)
 {
     gNtrRomEmu.romData = gDsiRom;
     gNtrRomEmu.romSize = ((u32)gDsiRomSize + 511) & ~511;
+    gNtrRomEmu.cardId = CARD_ID_TWL;
+	gNtrRomEmu.isDSMode = true;
 }
 #endif
+static void setRomToMainRom(void)
+{
+    gNtrRomEmu.romData = gDefaultRom;
+    gNtrRomEmu.romSize = (u32)gDefaultRomSize;
+    gNtrRomEmu.romSize = (gNtrRomEmu.romSize + 511) & ~511;
+    // We support DSi mode if the firmware is dual mode, or if a single rom has the DSi flag set
+	gNtrRomEmu.cardId = CARD_ID_TWL;
+#ifndef DETECT_CONSOLE_TYPE
+    if ((gDefaultRom[0x12] & 2) == 0)
+    {
+        gNtrRomEmu.cardId = CARD_ID_NTR;
+    }
+#endif
+#if defined(DETECT_CONSOLE_TYPE) || defined(ENABLE_NTRBOOT)
+    gNtrRomEmu.isDSMode = true;
+#endif
+}
 
 static void resetNtrCard(void)
 {
@@ -64,7 +84,8 @@ static void resetNtrCard(void)
     pio_sm_set_enabled(pio0, 0, true);
 #ifdef DETECT_CONSOLE_TYPE  
     setRomToDsiRom();
-    gNtrRomEmu.cardId = 0xC00000C2;
+#elif defined(ENABLE_NTRBOOT)
+	setRomToMainRom();
 #endif
 #ifdef DSPICO_ENABLE_WRFUXXED
     ntrc_resetSpiUart();
@@ -179,21 +200,6 @@ int __time_critical_func(main)()
 
     memset(&gNtrRomEmu, 0, sizeof(gNtrRomEmu));
 
-
-    // We support DSi mode if the firmware is dual mode, or if a single rom has the DSi flag set
-#ifndef DETECT_CONSOLE_TYPE
-    if (gDefaultRom[0x12] & 2)
-    {
-#endif
-        gNtrRomEmu.cardId = CARD_ID_TWL;
-#ifndef DETECT_CONSOLE_TYPE
-    }
-    else
-    {
-        gNtrRomEmu.cardId = CARD_ID_NTR;
-    }
-#endif
-
     multicore_launch_core1(core1_entry);
 
     gpio_init_mask(PIN_INPUT_MASK);
@@ -229,15 +235,6 @@ int __time_critical_func(main)()
     gpio_set_drive_strength(PIN_D5, GPIO_DRIVE_STRENGTH_2MA);
     gpio_set_drive_strength(PIN_D6, GPIO_DRIVE_STRENGTH_2MA);
     gpio_set_drive_strength(PIN_D7, GPIO_DRIVE_STRENGTH_2MA);
-
-#ifdef DETECT_CONSOLE_TYPE
-    setRomToDsiRom();
-    gNtrRomEmu.isDSMode = true;
-#else
-    gNtrRomEmu.romData = gDefaultRom;
-    gNtrRomEmu.romSize = (u32)gDefaultRomSize;
-    gNtrRomEmu.romSize = (gNtrRomEmu.romSize + 511) & ~511;
-#endif
 
     sProgramOffset = pio_add_program(pio0, &ntr_card_program);
 #ifdef DSPICO_ENABLE_WRFUXXED
@@ -275,6 +272,12 @@ int __time_critical_func(main)()
     irq_set_enabled(IO_IRQ_BANK0, true);
 
     irq_init_priorities();
+#ifdef ENABLE_NTRBOOT
+	// Setup the systick timer with the processor clock as clock source (running at 200mhz, we get a 5ns resolution)
+	systick_hw->csr = 0x5;
+	// Sets the reload value to the maximum
+	systick_hw->rvr = 0x00ffffff;
+#endif
     irq_set_priority(PIO0_IRQ_0, 0x40);
     irq_set_priority(IO_IRQ_BANK0, 0x40);
     irq_set_priority(USBCTRL_IRQ, 0x80);
