@@ -236,6 +236,10 @@ int __time_critical_func(main)()
     gpio_set_drive_strength(PIN_D6, GPIO_DRIVE_STRENGTH_2MA);
     gpio_set_drive_strength(PIN_D7, GPIO_DRIVE_STRENGTH_2MA);
 
+#if !defined(DETECT_CONSOLE_TYPE) && !defined(ENABLE_NTRBOOT)
+	setRomToMainRom();
+#endif
+
     sProgramOffset = pio_add_program(pio0, &ntr_card_program);
 #ifdef DSPICO_ENABLE_WRFUXXED
     u32 spiUartProgOffs = pio_add_program(pio0, &ntr_card_spi_program);
