@@ -32,7 +32,7 @@ static void setRomToDsiRom(void)
     gNtrRomEmu.romData = gDsiRom;
     gNtrRomEmu.romSize = ((u32)gDsiRomSize + 511) & ~511;
     gNtrRomEmu.cardId = CARD_ID_TWL;
-	gNtrRomEmu.isDSMode = true;
+    gNtrRomEmu.isDSMode = true;
 }
 #endif
 static void setRomToMainRom(void)
@@ -41,7 +41,7 @@ static void setRomToMainRom(void)
     gNtrRomEmu.romSize = (u32)gDefaultRomSize;
     gNtrRomEmu.romSize = (gNtrRomEmu.romSize + 511) & ~511;
     // We support DSi mode if the firmware is dual mode, or if a single rom has the DSi flag set
-	gNtrRomEmu.cardId = CARD_ID_TWL;
+    gNtrRomEmu.cardId = CARD_ID_TWL;
 #ifndef DETECT_CONSOLE_TYPE
     if ((gDefaultRom[0x12] & 2) == 0)
     {
@@ -83,12 +83,12 @@ static void resetNtrCard(void)
     pio_sm_exec(pio0, 0, pio_encode_jmp(sProgramOffset));
     pio_sm_set_enabled(pio0, 0, true);
 #if defined(ENABLE_NTRBOOT)
-	clocks_hw->sleep_en0 &= ~CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS;
+    clocks_hw->sleep_en0 &= ~CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS;
 #endif
 #ifdef DETECT_CONSOLE_TYPE
     setRomToDsiRom();
 #elif defined(ENABLE_NTRBOOT)
-	setRomToMainRom();
+    setRomToMainRom();
 #endif
 #ifdef DSPICO_ENABLE_WRFUXXED
     ntrc_resetSpiUart();
@@ -240,7 +240,7 @@ int __time_critical_func(main)()
     gpio_set_drive_strength(PIN_D7, GPIO_DRIVE_STRENGTH_2MA);
 
 #if !defined(DETECT_CONSOLE_TYPE) && !defined(ENABLE_NTRBOOT)
-	setRomToMainRom();
+    setRomToMainRom();
 #endif
 
     sProgramOffset = pio_add_program(pio0, &ntr_card_program);
@@ -280,10 +280,10 @@ int __time_critical_func(main)()
 
     irq_init_priorities();
 #ifdef ENABLE_NTRBOOT
-	// Setup the systick timer with the processor clock as clock source (running at 200mhz, we get a 5ns resolution)
-	systick_hw->csr = 0x5;
-	// Sets the reload value to the maximum
-	systick_hw->rvr = 0x00ffffff;
+    // Setup the systick timer with the processor clock as clock source (running at 200mhz, we get a 5ns resolution)
+    systick_hw->csr = 0x5;
+    // Sets the reload value to the maximum
+    systick_hw->rvr = 0x00ffffff;
 #endif
     irq_set_priority(PIO0_IRQ_0, 0x40);
     irq_set_priority(IO_IRQ_BANK0, 0x40);
