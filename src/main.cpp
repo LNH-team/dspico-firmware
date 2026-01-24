@@ -82,7 +82,10 @@ static void resetNtrCard(void)
     irq_set_enabled(PIO0_IRQ_0, true);
     pio_sm_exec(pio0, 0, pio_encode_jmp(sProgramOffset));
     pio_sm_set_enabled(pio0, 0, true);
-#ifdef DETECT_CONSOLE_TYPE  
+#if defined(ENABLE_NTRBOOT)
+	clocks_hw->sleep_en0 &= ~CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS;
+#endif
+#ifdef DETECT_CONSOLE_TYPE
     setRomToDsiRom();
 #elif defined(ENABLE_NTRBOOT)
 	setRomToMainRom();
