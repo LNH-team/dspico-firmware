@@ -82,21 +82,20 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/roms/default.nds" AND EXISTS "${CMAKE_SOURCE_DIR}
   )
 endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/roms/ntrboot.nds" AND EXISTS "${CMAKE_SOURCE_DIR}/roms/ntrbootdsi.nds")
-  target_compile_definitions(DSpico PRIVATE
-    ENABLE_NTRBOOT # This macro enables the firmware to switch the rom based on which console is detected. You shouldn't change this.
-    ENABLE_NTRBOOT_DETECTION # This macro enables the firmware to switch the rom based on which console is detected. You shouldn't change this.
-  )
+if(EXISTS "${CMAKE_SOURCE_DIR}/roms/ntrbootdsi.nds" AND NOT EXISTS "${CMAKE_SOURCE_DIR}/roms/ntrboot.nds")
+  message(FATAL_ERROR "Dsi ntrboot rom provided without 3DS ntrboot counterpart.")
 endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/roms/ntrboot.nds")
   target_compile_definitions(DSpico PRIVATE
-    ENABLE_NTRBOOT # This macro enables the firmware to switch the rom based on which console is detected. You shouldn't change this.
+    ENABLE_NTRBOOT # This macro enables the firmware to detect if the cart is being read from within a ntrboot context (3DS or DSi) and switch rom accordingly.
   )
 endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/roms/ntrbootdsi.nds" AND NOT EXISTS "${CMAKE_SOURCE_DIR}/roms/ntrboot.nds")
-  message(FATAL_ERROR "Dsi ntrboot rom provided without 3ds ntrboot counterpart.")
+if(EXISTS "${CMAKE_SOURCE_DIR}/roms/ntrboot.nds" AND EXISTS "${CMAKE_SOURCE_DIR}/roms/ntrbootdsi.nds")
+  target_compile_definitions(DSpico PRIVATE
+    ENABLE_NTRBOOT_DETECTION # This macro enables the firmware to detect if when the cart is being read in a ntrboot context, the console reading it is a 3DS or a DSi, and switch rom accordingly.
+  )
 endif()
 
 pico_generate_pio_header(DSpico ${CMAKE_CURRENT_LIST_DIR}/src/ntrCard.pio)
