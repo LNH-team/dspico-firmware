@@ -18,6 +18,7 @@
 #include "sd/SdCard.h"
 #include "scramblerRing.h"
 #include "pico/bootrom.h"
+#include "hardware/clocks.h"
 #include "hardware/xosc.h"
 #include "powerSaving.h"
 

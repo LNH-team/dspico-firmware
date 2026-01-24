@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include "romData.h"
 #include "ntrCardRom.h"
-#include "hardware/structs/systick.h"
 #include "hardware/clocks.h"
+#include "hardware/structs/systick.h"
 
 #define ROM_HEADER_TWL_AREA_START_OFFSET    0x92
 #define TWL_AREA_START_STEP_SIZE            0x80000
