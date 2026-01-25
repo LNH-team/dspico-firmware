@@ -61,6 +61,8 @@ The `CMakeList.txt` file contains a couple of options that you can configure.
 
 ### Setting up the rom(s)
 To compile and properly use the firmware, you will need to place a valid DS rom in the `roms/` folder, named `default.nds`. Additionally, you may include a second rom in the `roms/` folder named `dsimode.nds`, if you wish to have a different rom for DS consoles and DSi/3DS consoles.
+
+Additionally, alongside the main roms, 3DS/DSi ntrboot images can be added to the firmware by placing them in the `roms/` folder, named `ntrboot.nds` (for 3DS, or DSi if only this image) and `ntrboot.dsi` (DSi image to be used if `ntrboot.nds` is present). If any of them is present, the firmware will enable automatic detect ntrboot (this might cause issues with third party cart loading programs).
 <table>
     <tr>
         <th>Usage</th>
@@ -84,13 +86,13 @@ To compile and properly use the firmware, you will need to place a valid DS rom 
         <td>DSi ntrboot</td>
         <td>GCD rom</td>
         <td>-</td>
-        <td>The rom must contain GCD blowfish keys and must be properly signed.<br>The DSpico must be using USB power, such that the firmware is booted before starting the DSi. Without external power, the firmware currently does not boot fast enough to keep up with DSi ntrboot.</td>
+        <td>The rom must contain GCD blowfish keys and must be properly signed.<br>It might be possible that the DSpico is not detected by the console during DSi ntrboot, if that happens there might be the need to use USB power, such that the firmware is booted before starting the DSi.<br>This will <b>only</b> serve the DSi ntrboot rom.</td>
     </tr>
     <tr>
         <td>3DS ntrboot</td>
         <td>3DS ntrboot rom</td>
         <td>-</td>
-        <td>A 3DS ntrboot rom consists of a header, the blowfish keys and the firm to boot.</td>
+        <td>A 3DS ntrboot rom consists of a header, the blowfish keys and the firm to boot.<br>This will <b>only</b> serve the 3DS ntrboot rom.</td>
     </tr>
     <tr>
         <td>Separate rom for DS and DSi</td>
@@ -103,6 +105,32 @@ To compile and properly use the firmware, you will need to place a valid DS rom 
         <td>Bootloader</td>
         <td>WRFU Tester v0.60</td>
         <td>The bootloader rom and <code>uartBufv060.bin</code> must be patched with the DSpico DLDI.<br><code>uartBufv060.bin</code> must be placed in the <code>/data</code> folder.<br>The bootloader rom must contain NTR blowfish keys.<br>The <code>DSPICO_ENABLE_WRFUXXED</code> define in <code>CMakeLists.txt</code> must be enabled.</td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <th>Usage</th>
+        <th>ntrboot.nds</th>
+        <th>ntrbootdsi.nds</th>
+        <th>Notes</th>
+    </tr>
+    <tr>
+        <td>DSi ntrboot</td>
+        <td>GCD rom</td>
+        <td>-</td>
+        <td>The rom must be the same format as from the table above.<br>The pico will automatically detect ntrboot and serve this rom.</td>
+    </tr>
+    <tr>
+        <td>3DS ntrboot</td>
+        <td>3DS ntrboot rom</td>
+        <td>-</td>
+        <td>The rom must be the same format as from the table above.<br>The pico will automatically detect ntrboot and serve this rom.</td>
+    </tr>
+    <tr>
+        <td>Separate rom for DSi and 3DS ntrboot</td>
+        <td>3DS ntrboot rom</td>
+        <td>GCD rom</td>
+        <td>The roms must be the same format as from the table above.<br>The pico will automatically detect ntrboot and the console and serve the appropriate rom accordingly.</td>
     </tr>
 </table>
 
