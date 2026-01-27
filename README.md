@@ -62,7 +62,7 @@ The `CMakeList.txt` file contains a couple of options that you can configure.
 ### Setting up the rom(s)
 To compile and properly use the firmware, you will need to place a valid DS rom in the `roms/` folder, named `default.nds`. Additionally, you may include a second rom in the `roms/` folder named `dsimode.nds`, if you wish to have a different rom for DS consoles and DSi/3DS consoles.
 
-Additionally, alongside the main roms, 3DS/DSi ntrboot images can be added to the firmware by placing them in the `roms/` folder, named `ntrboot.nds` (for 3DS, or DSi if only this image) and `ntrboot.dsi` (DSi image to be used if `ntrboot.nds` is present). If any of them is present, the firmware will enable automatic detect ntrboot (this might cause issues with third party cart loading programs).
+Additionally, alongside the main roms, 3DS/DSi ntrboot images can be added to the firmware by placing them in the `roms/` folder, named `ntrboot.nds` (for 3DS, or DSi if only this image) and `ntrbootdsi.nds` (DSi image to be used if `ntrboot.nds` is present). If any of them is present, the firmware will enable automatic detect ntrboot (this might cause issues with third party cart loading programs).
 <table>
     <tr>
         <th>Usage</th>
