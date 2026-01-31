@@ -12,6 +12,9 @@
 #define TWL_P_TABLE_OFFSET                  0x600
 #define TWL_S_BOXES_OFFSET                  0xC00
 
+#define ELAPSED_SYSTICK(systick_hw) (0xffffff - systick_hw->cvr)
+#define NS_SYSTICK(nanoseconds) (nanoseconds / 5)
+
 static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, u32 word, pio_hw_t* pio)
 {
     romEmu->cmd0 = word;
@@ -68,40 +71,40 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
             if (romEmu->previousCommand == NTR_CMD_ID_NORMAL_LOAD_TABLE && romEmu->isDSMode)
             {
             #ifdef ENABLE_NTRBOOT_AUTO_DETECTION
-                u32 curtick = systick_hw->cvr;
+                u32 elapsed_systick = ELAPSED_SYSTICK(systick_hw);
                 // We no longer need the systick to be active
                 pwr_disableSysTickClock();
-                // the 3ds takes around 2076245 nanoseconds to send the command after sending 9f (0x65611 ticks)
-                // on top of that we add a bit more of leeway and we wait for 2109440 nanoseconds (0x67000 ticks)
+                // the 3ds takes around 2076245 nanoseconds to send the command after sending 9f
+                // on top of that we add a bit more of leeway and we wait for 2109440 nanoseconds
                 // so if the elapsed time is more than that amount, we're no longer a being read by a 3DS and we
                 // serve again the DS rom
-                if (curtick < 0xF98FFF)
+                if (elapsed_systick > NS_SYSTICK(2109440))
                 {
                     //Console is DS, load normal rom in romData
                     romEmu->romData = gDefaultRom;
                     romEmu->romSize = (u32)gDefaultRomSize;
                 }
             #ifdef ENABLE_NTRBOOT_CONSOLE_TYPE_DETECTION
-                // the DSi takes around 2067540 nanoseconds to send the command after sending 9f (0x646FF ticks)
+                // the DSi takes around 2067540 nanoseconds to send the command after sending 9f
                 // so if the elapsed time is more than that amount, we're no longer a being read by a DSi
-                else if (curtick < 0xF9A9EE)
+                else if (elapsed_systick > NS_SYSTICK(2067540))
                 {
                     //Console is 3DS, trying to load a ntrboot image, load 3ds ntrboot rom
                     romEmu->romData = gNtrbootRom;
                     romEmu->romSize = (u32)gNtrbootRomSize;
                 }
-                // the ds takes around 2056020 nanoseconds to send the command after sending 9f (0x64644 ticks)
+                // the ds takes around 2056020 nanoseconds to send the command after sending 9f
                 // so if the elapsed time is more than that amount, we're no longer a being read by a ds
-                else if (curtick < 0xF9B9BB)
+                else if (elapsed_systick > NS_SYSTICK(2056020))
                 {
                     //Console is DSi, trying to load a ntrboot image, load dsi ntrboot rom
                     romEmu->romData = gNtrbootDsiRom;
                     romEmu->romSize = (u32)gNtrbootDsiRomSize;
                 }
             #else
-                // the ds takes around 2056020 nanoseconds to send the command after sending 9f (0x64644 ticks)
+                // the ds takes around 2056020 nanoseconds to send the command after sending 9f
                 // so if the elapsed time is more than that amount, we're no longer a being read by a ds
-                else if (curtick < 0xF9B9BB)
+                else if (elapsed_systick > NS_SYSTICK(2056020))
                 {
                     //Console is DSi or 3DS, trying to load a ntrboot image, load ntrboot rom
                     romEmu->romData = gNtrbootRom;
