@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "romData.h"
 #include "ntrCardRom.h"
-#include "hardware/clocks.h"
+#include "powerSaving.h"
 #include "hardware/structs/systick.h"
 
 #define ROM_HEADER_TWL_AREA_START_OFFSET    0x92
@@ -25,7 +25,7 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
         #endif
         #ifdef ENABLE_NTRBOOT_AUTO_DETECTION
             // Enable the systick clock and reload the counter
-            clocks_hw->sleep_en0 |= CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS;
+            pwr_enableSysTickClock();
             systick_hw->cvr = 0;
         #endif
             break;
@@ -38,8 +38,8 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
             romEmu->isDSMode = false;
         #endif
         #ifdef ENABLE_NTRBOOT_AUTO_DETECTION
-            // We're not in a ntrboot context, disable the systick clock
-            clocks_hw->sleep_en0 &= ~CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS;
+            // We're not in a ntrboot context
+            pwr_disableSysTickClock();
         #endif
             break;
         }
@@ -51,8 +51,8 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
             {
                 romEmu->isDSMode = false;
         #ifdef ENABLE_NTRBOOT_AUTO_DETECTION
-                // We're not in a ntrboot context, disable the systick clock
-                clocks_hw->sleep_en0 &= ~CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS;
+                // We're not in a ntrboot context
+                pwr_disableSysTickClock();
         #endif
             }
             romEmu->previousCommand = NTR_CMD_ID_NORMAL_READ_ID;
@@ -69,8 +69,8 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
             {
             #ifdef ENABLE_NTRBOOT_AUTO_DETECTION
                 u32 curtick = systick_hw->cvr;
-                // We no longer need the systick to be active, disable its clock
-                clocks_hw->sleep_en0 &= ~CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS;
+                // We no longer need the systick to be active
+                pwr_disableSysTickClock();
                 // the 3ds takes around 2076245 nanoseconds to send the command after sending 9f (0x65611 ticks)
                 // on top of that we add a bit more of leeway and we wait for 2109440 nanoseconds (0x67000 ticks)
                 // so if the elapsed time is more than that amount, we're no longer a being read by a 3DS and we

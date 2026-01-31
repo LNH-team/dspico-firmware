@@ -4,6 +4,7 @@
 #include "hardware/structs/scb.h"
 #include "hardware/structs/rosc.h"
 #include "hardware/structs/syscfg.h"
+#include "hardware/structs/systick.h"
 
 static void stopUnusedClocks(void)
 {
@@ -109,4 +110,14 @@ void pwr_enableUsbPowerSaving(void)
         CLOCKS_SLEEP_EN1_CLK_USB_USBCTRL_BITS |
         CLOCKS_SLEEP_EN1_CLK_SYS_USBCTRL_BITS);
     hw_set_bits(&syscfg_hw->mempowerdown, SYSCFG_MEMPOWERDOWN_USB_BITS);
+}
+
+void pwr_disableSysTickClock(void)
+{
+    hw_clear_bits(&clocks_hw->sleep_en0, CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS);
+}
+
+void pwr_enableSysTickClock(void)
+{
+    hw_set_bits(&clocks_hw->sleep_en0, CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS);
 }
