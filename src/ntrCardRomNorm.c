@@ -75,7 +75,7 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
                 // on top of that we add a bit more of leeway and we wait for 2109440 nanoseconds (0x67000 ticks)
                 // so if the elapsed time is more than that amount, we're no longer a being read by a 3DS and we
                 // serve again the DS rom
-                if(curtick < 0xF98FFF)
+                if (curtick < 0xF98FFF)
                 {
                     //Console is DS, load normal rom in romData
                     romEmu->romData = gDefaultRom;
@@ -84,7 +84,7 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
             #ifdef ENABLE_NTRBOOT_CONSOLE_TYPE_DETECTION
                 // the DSi takes around 2067540 nanoseconds to send the command after sending 9f (0x646FF ticks)
                 // so if the elapsed time is more than that amount, we're no longer a being read by a DSi
-                else if(curtick < 0xF9A9EE)
+                else if (curtick < 0xF9A9EE)
                 {
                     //Console is 3DS, trying to load a ntrboot image, load 3ds ntrboot rom
                     romEmu->romData = gNtrbootRom;
@@ -92,7 +92,7 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
                 }
                 // the ds takes around 2056020 nanoseconds to send the command after sending 9f (0x64644 ticks)
                 // so if the elapsed time is more than that amount, we're no longer a being read by a ds
-                else if(curtick < 0xF9B9BB)
+                else if (curtick < 0xF9B9BB)
                 {
                     //Console is DSi, trying to load a ntrboot image, load dsi ntrboot rom
                     romEmu->romData = gNtrbootDsiRom;
@@ -101,7 +101,7 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
             #else
                 // the ds takes around 2056020 nanoseconds to send the command after sending 9f (0x64644 ticks)
                 // so if the elapsed time is more than that amount, we're no longer a being read by a ds
-                else if(curtick < 0xF9B9BB)
+                else if (curtick < 0xF9B9BB)
                 {
                     //Console is DSi or 3DS, trying to load a ntrboot image, load ntrboot rom
                     romEmu->romData = gNtrbootRom;
