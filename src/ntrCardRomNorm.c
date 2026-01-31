@@ -20,10 +20,10 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
         case NTR_CMD_ID_NORMAL_LOAD_TABLE:
         {
             ntrc_noPayload(pio); //ignore load table cycles
-        #if defined(DETECT_CONSOLE_TYPE) || defined(ENABLE_NTRBOOT)
+        #if defined(DETECT_CONSOLE_TYPE) || defined(ENABLE_NTRBOOT_AUTO_DETECTION)
             romEmu->previousCommand = NTR_CMD_ID_NORMAL_LOAD_TABLE;
         #endif
-        #ifdef ENABLE_NTRBOOT
+        #ifdef ENABLE_NTRBOOT_AUTO_DETECTION
             // Enable the systick clock and reload the counter
             clocks_hw->sleep_en0 |= CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS;
             systick_hw->cvr = 0;
@@ -34,10 +34,10 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
         case NTR_CMD_ID_NORMAL_3DS_DETECT:
         {
             ntrc_noPayload(pio);
-        #if defined(DETECT_CONSOLE_TYPE) || defined(ENABLE_NTRBOOT)
+        #if defined(DETECT_CONSOLE_TYPE) || defined(ENABLE_NTRBOOT_AUTO_DETECTION)
             romEmu->isDSMode = false;
         #endif
-        #ifdef ENABLE_NTRBOOT
+        #ifdef ENABLE_NTRBOOT_AUTO_DETECTION
             // We're not in a ntrboot context, disable the systick clock
             clocks_hw->sleep_en0 &= ~CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS;
         #endif
@@ -46,11 +46,11 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
 
         case NTR_CMD_ID_NORMAL_READ_ID:
         {
-        #if defined(DETECT_CONSOLE_TYPE) || defined(ENABLE_NTRBOOT)
+        #if defined(DETECT_CONSOLE_TYPE) || defined(ENABLE_NTRBOOT_AUTO_DETECTION)
             if (romEmu->previousCommand == NTR_CMD_ID_NORMAL_LOAD_TABLE) // This command order is used on DSi/3DS
             {
                 romEmu->isDSMode = false;
-        #ifdef ENABLE_NTRBOOT
+        #ifdef ENABLE_NTRBOOT_AUTO_DETECTION
                 // We're not in a ntrboot context, disable the systick clock
                 clocks_hw->sleep_en0 &= ~CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS;
         #endif
@@ -64,10 +64,10 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
 
         case NTR_CMD_ID_NORMAL_READ_PAGE:
         {
-        #if defined(DETECT_CONSOLE_TYPE) || defined(ENABLE_NTRBOOT)
+        #if defined(DETECT_CONSOLE_TYPE) || defined(ENABLE_NTRBOOT_AUTO_DETECTION)
             if (romEmu->previousCommand == NTR_CMD_ID_NORMAL_LOAD_TABLE && romEmu->isDSMode)
             {
-            #ifdef ENABLE_NTRBOOT
+            #ifdef ENABLE_NTRBOOT_AUTO_DETECTION
                 u32 curtick = systick_hw->cvr;
                 // We no longer need the systick to be active, disable its clock
                 clocks_hw->sleep_en0 &= ~CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS;
@@ -81,7 +81,7 @@ static void __time_critical_func(normCmd0Handler)(struct ntr_rom_emu_t* romEmu, 
                     romEmu->romData = gDefaultRom;
                     romEmu->romSize = (u32)gDefaultRomSize;
                 }
-            #ifdef ENABLE_NTRBOOT_DETECTION
+            #ifdef ENABLE_NTRBOOT_CONSOLE_TYPE_DETECTION
                 // the DSi takes around 2067540 nanoseconds to send the command after sending 9f (0x646FF ticks)
                 // so if the elapsed time is more than that amount, we're no longer a being read by a DSi
                 else if(curtick < 0xF9A9EE)

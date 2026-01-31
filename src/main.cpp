@@ -49,7 +49,7 @@ static void setRomToMainRom(void)
         gNtrRomEmu.cardId = CARD_ID_NTR;
     }
 #endif
-#if defined(DETECT_CONSOLE_TYPE) || defined(ENABLE_NTRBOOT)
+#if defined(DETECT_CONSOLE_TYPE) || defined(ENABLE_NTRBOOT_AUTO_DETECTION)
     gNtrRomEmu.isDSMode = true;
 #endif
 }
@@ -83,12 +83,12 @@ static void resetNtrCard(void)
     irq_set_enabled(PIO0_IRQ_0, true);
     pio_sm_exec(pio0, 0, pio_encode_jmp(sProgramOffset));
     pio_sm_set_enabled(pio0, 0, true);
-#if defined(ENABLE_NTRBOOT)
+#if defined(ENABLE_NTRBOOT_AUTO_DETECTION)
     clocks_hw->sleep_en0 &= ~CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS;
 #endif
 #ifdef DETECT_CONSOLE_TYPE
     setRomToDsiRom();
-#elif defined(ENABLE_NTRBOOT)
+#elif defined(ENABLE_NTRBOOT_AUTO_DETECTION)
     setRomToMainRom();
 #endif
 #ifdef DSPICO_ENABLE_WRFUXXED
@@ -240,7 +240,7 @@ int __time_critical_func(main)()
     gpio_set_drive_strength(PIN_D6, GPIO_DRIVE_STRENGTH_2MA);
     gpio_set_drive_strength(PIN_D7, GPIO_DRIVE_STRENGTH_2MA);
 
-#if !defined(DETECT_CONSOLE_TYPE) && !defined(ENABLE_NTRBOOT)
+#if !defined(DETECT_CONSOLE_TYPE) && !defined(ENABLE_NTRBOOT_AUTO_DETECTION)
     setRomToMainRom();
 #endif
 
@@ -280,7 +280,7 @@ int __time_critical_func(main)()
     irq_set_enabled(IO_IRQ_BANK0, true);
 
     irq_init_priorities();
-#ifdef ENABLE_NTRBOOT
+#ifdef ENABLE_NTRBOOT_AUTO_DETECTION
     // Setup the systick timer with the processor clock as clock source (running at 200mhz, we get a 5ns resolution)
     systick_hw->csr = 0x5;
     // Sets the reload value to the maximum

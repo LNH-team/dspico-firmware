@@ -18,7 +18,7 @@ gDsiRomDataEnd:
 .equ gDsiRomSize, gDsiRomDataEnd - gDsiRom
 #endif
 
-#if defined(ENABLE_NTRBOOT)
+#if defined(ENABLE_NTRBOOT_AUTO_DETECTION)
 .global gNtrbootRom
 gNtrbootRom:
     .incbin "../roms/ntrboot.nds"
@@ -27,7 +27,7 @@ gNtrbootRomEnd:
 .global gNtrbootRomSize
 .equ gNtrbootRomSize, gNtrbootRomEnd - gNtrbootRom
 
-#if defined(ENABLE_NTRBOOT_DETECTION)
+#if defined(ENABLE_NTRBOOT_CONSOLE_TYPE_DETECTION)
 .global gNtrbootDsiRom
 gNtrbootDsiRom:
     .incbin "../roms/ntrbootdsi.nds"
