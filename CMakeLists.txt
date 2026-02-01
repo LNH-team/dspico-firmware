@@ -88,13 +88,13 @@ endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/roms/ntrboot.nds")
   target_compile_definitions(DSpico PRIVATE
-    ENABLE_NTRBOOT # This macro enables the firmware to detect if the cart is being read from within a ntrboot context (3DS or DSi) and switch rom accordingly.
+    ENABLE_NTRBOOT_AUTO_DETECTION # This macro enables the firmware to detect if the cart is being read from within a ntrboot context (3DS or DSi) and switch rom accordingly.
   )
 endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/roms/ntrboot.nds" AND EXISTS "${CMAKE_SOURCE_DIR}/roms/ntrbootdsi.nds")
   target_compile_definitions(DSpico PRIVATE
-    ENABLE_NTRBOOT_DETECTION # This macro enables the firmware to detect if when the cart is being read in a ntrboot context, the console reading it is a 3DS or a DSi, and switch rom accordingly.
+    ENABLE_NTRBOOT_CONSOLE_TYPE_DETECTION # This macro enables the firmware to detect if when the cart is being read in a ntrboot context, the console reading it is a 3DS or a DSi, and switch rom accordingly.
   )
 endif()
 
