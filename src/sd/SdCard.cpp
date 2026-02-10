@@ -97,6 +97,12 @@ sdio_status_t SdCard::ACmd41SdSendOpCond(u32 argument, u32& response) const
     return rp2040_sdio_command_R3(ACMD41, argument, &response); // SD_SEND_OP_COND
 }
 
+sdio_status_t SdCard::ACmd42SetClrCardDetect(u32 argument) const
+{
+    u32 response;
+    return rp2040_sdio_command_R1(ACMD42, argument, &response); // SET_CLR_CARD_DETECT
+}
+
 bool SdCard::TryInitialize()
 {
     u32 reply;
@@ -161,6 +167,13 @@ bool SdCard::TryInitialize()
 
     // Select card
     if (Cmd7SelectCard(_sdioRca) != SDIO_OK)
+    {
+        return false;
+    }
+
+    // Disable DAT3 pull-up.
+    if (Cmd55AppCmd(_sdioRca) != SDIO_OK ||
+        ACmd42SetClrCardDetect(0) != SDIO_OK)
     {
         return false;
     }

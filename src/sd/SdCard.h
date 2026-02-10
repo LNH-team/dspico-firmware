@@ -168,6 +168,7 @@ private:
     sdio_status_t ACmd6SetBusWidth(u32 argument) const;
     sdio_status_t ACmd23SetWrBlkEraseCount(u32 count) const;
     sdio_status_t ACmd41SdSendOpCond(u32 argument, u32& response) const;
+    sdio_status_t ACmd42SetClrCardDetect(u32 argument) const;
 
     bool IsSdhcCard() const { return (_sdioOcr & (1 << 30)) != 0; }
     bool IsCardBusy() const { return (sio_hw->gpio_in & (1 << SDIO_D0)) == 0; }

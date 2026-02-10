@@ -170,6 +170,9 @@ const uint8_t ACMD23 = 0X17;
 /** SD_SEND_OP_COMD - Sends host capacity support information and
     activates the card's initialization process */
 const uint8_t ACMD41 = 0X29;
+/** SET_CLR_CARD_DETECT - Connect[1]/Disconnect[0] the 50 KOhm pull-up resistor
+    on CD/DAT3 (pin 1) of the card. */
+const uint8_t ACMD42 = 0X2A;
 //==============================================================================
 // CARD_STATUS
 /** The command's argument was out of the allowed range for this card. */
