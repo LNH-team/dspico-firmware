@@ -662,6 +662,7 @@ static void rp2040_sdio_irq()
                 channel_config_set_dreq(&dmacfg, pio_get_dreq(SDIO_PIO, SDIO_DATA_SM, false));
                 dma_channel_configure(SDIO_DMA_CHB, &dmacfg,
                     &g_sdio.card_response, &SDIO_PIO->rxf[SDIO_DATA_SM], 1, true);
+                return;
             }
         }
     }
