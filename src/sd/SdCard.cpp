@@ -135,7 +135,7 @@ bool SdCard::TryInitialize()
     do
     {
         if (Cmd55AppCmd(0) != SDIO_OK ||
-            ACmd41SdSendOpCond(0xD0040000, _sdioOcr) != SDIO_OK) // 3.0V voltage
+            ACmd41SdSendOpCond(0x50100000, _sdioOcr) != SDIO_OK) // 3.2-3.3V voltage
             // !checkReturnOk(rp2040_sdio_command_R1(ACMD41, 0xC0100000, &g_sdio_ocr)))
         {
             return false;
