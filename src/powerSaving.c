@@ -114,10 +114,10 @@ void pwr_enableUsbPowerSaving(void)
 
 void pwr_disableSysTickClock(void)
 {
-    hw_clear_bits(&clocks_hw->sleep_en0, CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS);
+    hw_clear_bits(&clocks_hw->sleep_en0, CLOCKS_SLEEP_EN0_CLK_SYS_CLOCKS_BITS);
 }
 
 void pwr_enableSysTickClock(void)
 {
-    hw_set_bits(&clocks_hw->sleep_en0, CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS);
+    hw_set_bits(&clocks_hw->sleep_en0, CLOCKS_SLEEP_EN0_CLK_SYS_CLOCKS_BITS);
 }

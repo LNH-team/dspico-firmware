@@ -84,7 +84,7 @@ static void resetNtrCard(void)
     pio_sm_exec(pio0, 0, pio_encode_jmp(sProgramOffset));
     pio_sm_set_enabled(pio0, 0, true);
 #if defined(ENABLE_NTRBOOT_AUTO_DETECTION)
-    clocks_hw->sleep_en0 &= ~CLOCKS_ENABLED0_CLK_SYS_CLOCKS_BITS;
+    pwr_disableSysTickClock();
 #endif
 #ifdef DETECT_CONSOLE_TYPE
     setRomToDsiRom();
