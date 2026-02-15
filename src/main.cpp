@@ -285,6 +285,8 @@ int __time_critical_func(main)()
     systick_hw->csr = 0x5;
     // Sets the reload value to the maximum
     systick_hw->rvr = 0x00ffffff;
+#else
+    pwr_disableSysTickClock();
 #endif
     irq_set_priority(PIO0_IRQ_0, 0x40);
     irq_set_priority(IO_IRQ_BANK0, 0x40);
