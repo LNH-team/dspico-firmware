@@ -108,8 +108,8 @@ bool SdCard::TryInitialize()
     u32 reply;
     sdio_status_t status;
     
-    // Initialize at ~403.225 kHz clock speed
-    rp2040_sdio_init(62);
+    // Initialize at 1 MHz clock speed
+    rp2040_sdio_init(25);
 
     // Establish initial connection with the card
     for (int retries = 0; retries < 5; retries++)
