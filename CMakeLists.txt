@@ -9,7 +9,6 @@ add_compile_definitions(DSpico
   PICO_STACK_SIZE=0x600
   PICO_CORE1_STACK_SIZE=0x400
   ENABLE_R4_MODE
-  #DSPICO_ENABLE_WRFUXXED # This macro enables the WRFUXXED exploit to work.
   # ENABLE_PREVENT_DSI_AUTOBOOT # meant to be used with WRFU, doesn't work properly on the 3ds
 )
 
@@ -79,6 +78,12 @@ add_executable(DSpico
 if(EXISTS "${CMAKE_SOURCE_DIR}/roms/default.nds" AND EXISTS "${CMAKE_SOURCE_DIR}/roms/dsimode.nds")
   target_compile_definitions(DSpico PRIVATE
     DETECT_CONSOLE_TYPE # This macro enables the firmware to switch the rom based on which console is detected. You shouldn't change this.
+  )
+endif()
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/data/uartBufv060.bin")
+  target_compile_definitions(DSpico PRIVATE
+    DSPICO_ENABLE_WRFUXXED # This macro enables the WRFUXXED exploit to work.
   )
 endif()
 
