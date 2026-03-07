@@ -29,7 +29,8 @@ typedef volatile int64_t vs64;
 #define SDIO_D1  6
 #define SDIO_D2  7
 #define SDIO_D3  8
-#define SDIO_PIN_MASK ((1u<<SDIO_D3) | (1u<<SDIO_D2) | (1u<<SDIO_D1) | (1u<<SDIO_D0) | (1u<<SDIO_CMD) | (1u<<SDIO_CLK))
+#define SDIO_PIN_MASK  ((1u<<SDIO_D3) | (1u<<SDIO_D2) | (1u<<SDIO_D1) | (1u<<SDIO_D0) | \
+                        (1u<<SDIO_CMD) | (1u<<SDIO_CLK))
 
 #define PIN_RST     9
 #define PIN_CEB     10
@@ -44,11 +45,16 @@ typedef volatile int64_t vs64;
 #define PIN_D7      19
 #define PIN_IRQ     20
 #define PIN_CS2     21
+#define NTRC_PIN_MASK  ((1u<<PIN_CS2) | (1u<<PIN_IRQ) | (1u<<PIN_D7) | (1u<<PIN_D6) | \
+                        (1u<<PIN_D5) | (1u<<PIN_D4) | (1u<<PIN_D3) | (1u<<PIN_D2) | \
+                        (1u<<PIN_D1) | (1u<<PIN_D0) | (1u<<PIN_WREB) | (1u<<PIN_CEB) | \
+                        (1u<<PIN_RST))
 
 #define PIN_USB_VBUS    24
 
 #define PIN_DEV_TX0     0
 #define PIN_DEV_RX0     1
+#define DEV_UART_PIN_MASK  ((1u<<PIN_DEV_RX0) | (1u<<PIN_DEV_TX0))
 
 #define PIN_INPUT_MASK  0x2FFE00
 
