@@ -159,6 +159,93 @@ static void tryRebootToBootsel(void)
     }
 }
 
+static inline void earlyGpioInit(void)
+{
+    // Set all GPIOs to inputs.
+    // Note that we rely on hardware reset having enabled pull-downs.
+    gpio_init_mask(0xFFFFFFFFu);
+
+    // Set NTRCARD IRQ pin low.
+    // This needs to happen immediately.
+    gpio_put(PIN_IRQ, false);
+    gpio_set_dir(PIN_IRQ, GPIO_OUT);
+    gpio_disable_pulls(PIN_IRQ);
+
+    // SDIO CLK pin needs to be low before init.
+    gpio_put(SDIO_CLK, false);
+    gpio_set_dir(SDIO_CLK, true);
+
+    // Set SDIO and NTRCARD pin drive strengths.
+    // 4 mA is the default after reset. 2 mA is enough.
+    gpio_set_drive_strength(SDIO_CLK, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_drive_strength(SDIO_CMD, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_drive_strength(SDIO_D0, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_drive_strength(SDIO_D1, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_drive_strength(SDIO_D2, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_drive_strength(SDIO_D3, GPIO_DRIVE_STRENGTH_2MA);
+
+    gpio_set_drive_strength(PIN_D0, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_drive_strength(PIN_D1, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_drive_strength(PIN_D2, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_drive_strength(PIN_D3, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_drive_strength(PIN_D4, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_drive_strength(PIN_D5, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_drive_strength(PIN_D6, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_drive_strength(PIN_D7, GPIO_DRIVE_STRENGTH_2MA);
+
+    // Setup SDIO and NTRCARD pin pulls.
+    // SDIO CMD/DAT required when there are no external pull-ups.
+    gpio_disable_pulls(SDIO_CLK);
+#if 0
+    // We have no external pull-ups.
+    gpio_pull_up(SDIO_CMD);
+    gpio_pull_up(SDIO_D0);
+    gpio_pull_up(SDIO_D1);
+    gpio_pull_up(SDIO_D2);
+    gpio_pull_up(SDIO_D3);
+#else
+    // We have external pull-ups.
+    gpio_disable_pulls(SDIO_CMD);
+    gpio_disable_pulls(SDIO_D0);
+    gpio_disable_pulls(SDIO_D1);
+    gpio_disable_pulls(SDIO_D2);
+    gpio_disable_pulls(SDIO_D3);
+#endif
+
+    gpio_pull_down(PIN_RST);
+    gpio_pull_up(PIN_CEB);
+    gpio_pull_up(PIN_WREB);
+    gpio_disable_pulls(PIN_D0);
+    gpio_disable_pulls(PIN_D1);
+    gpio_disable_pulls(PIN_D2);
+    gpio_disable_pulls(PIN_D3);
+    gpio_disable_pulls(PIN_D4);
+    gpio_disable_pulls(PIN_D5);
+    gpio_disable_pulls(PIN_D6);
+    gpio_disable_pulls(PIN_D7);
+    gpio_pull_up(PIN_CS2);
+
+    // Set SDIO and NTRCARD DAT pin slew rate.
+    // Default slew rate after reset is slow. Good enough for 25 MHz.
+#if 0
+    gpio_set_slew_rate(SDIO_CLK, GPIO_SLEW_RATE_FAST);
+    gpio_set_slew_rate(SDIO_CMD, GPIO_SLEW_RATE_FAST);
+    gpio_set_slew_rate(SDIO_D0, GPIO_SLEW_RATE_FAST);
+    gpio_set_slew_rate(SDIO_D1, GPIO_SLEW_RATE_FAST);
+    gpio_set_slew_rate(SDIO_D2, GPIO_SLEW_RATE_FAST);
+    gpio_set_slew_rate(SDIO_D3, GPIO_SLEW_RATE_FAST);
+
+    gpio_set_slew_rate(PIN_D0, GPIO_SLEW_RATE_FAST);
+    gpio_set_slew_rate(PIN_D1, GPIO_SLEW_RATE_FAST);
+    gpio_set_slew_rate(PIN_D2, GPIO_SLEW_RATE_FAST);
+    gpio_set_slew_rate(PIN_D3, GPIO_SLEW_RATE_FAST);
+    gpio_set_slew_rate(PIN_D4, GPIO_SLEW_RATE_FAST);
+    gpio_set_slew_rate(PIN_D5, GPIO_SLEW_RATE_FAST);
+    gpio_set_slew_rate(PIN_D6, GPIO_SLEW_RATE_FAST);
+    gpio_set_slew_rate(PIN_D7, GPIO_SLEW_RATE_FAST);
+#endif
+}
+
 int __time_critical_func(main)()
 {
     bi_decl(bi_program_description("Ntr card emulator"));
@@ -196,39 +283,7 @@ int __time_critical_func(main)()
 
     multicore_launch_core1(core1_entry);
 
-    gpio_init_mask(PIN_INPUT_MASK);
-    gpio_set_dir_in_masked(PIN_INPUT_MASK);
-    gpio_init(PIN_IRQ);
-    gpio_put(PIN_IRQ, 0);
-    gpio_set_dir(PIN_IRQ, GPIO_OUT);
-    gpio_disable_pulls(PIN_D0);
-    gpio_disable_pulls(PIN_D1);
-    gpio_disable_pulls(PIN_D2);
-    gpio_disable_pulls(PIN_D3);
-    gpio_disable_pulls(PIN_D4);
-    gpio_disable_pulls(PIN_D5);
-    gpio_disable_pulls(PIN_D6);
-    gpio_disable_pulls(PIN_D7);
-    gpio_set_slew_rate(PIN_D0, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(PIN_D1, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(PIN_D2, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(PIN_D3, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(PIN_D4, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(PIN_D5, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(PIN_D6, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(PIN_D7, GPIO_SLEW_RATE_FAST);
-    gpio_pull_up(PIN_CEB);
-    gpio_pull_up(PIN_WREB);
-    gpio_pull_down(PIN_RST);
-    gpio_pull_up(PIN_CS2);
-    gpio_set_drive_strength(PIN_D0, GPIO_DRIVE_STRENGTH_2MA);
-    gpio_set_drive_strength(PIN_D1, GPIO_DRIVE_STRENGTH_2MA);
-    gpio_set_drive_strength(PIN_D2, GPIO_DRIVE_STRENGTH_2MA);
-    gpio_set_drive_strength(PIN_D3, GPIO_DRIVE_STRENGTH_2MA);
-    gpio_set_drive_strength(PIN_D4, GPIO_DRIVE_STRENGTH_2MA);
-    gpio_set_drive_strength(PIN_D5, GPIO_DRIVE_STRENGTH_2MA);
-    gpio_set_drive_strength(PIN_D6, GPIO_DRIVE_STRENGTH_2MA);
-    gpio_set_drive_strength(PIN_D7, GPIO_DRIVE_STRENGTH_2MA);
+    earlyGpioInit();
 
 #ifdef DETECT_CONSOLE_TYPE
     setRomToDsiRom();

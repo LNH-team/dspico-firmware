@@ -815,18 +815,11 @@ void rp2040_sdio_init(int clock_divider)
 
     // Redirect GPIOs to PIO
     gpio_set_function(SDIO_CMD, GPIO_FUNC_PIO1);
-    gpio_set_function(SDIO_CLK, GPIO_FUNC_PIO1);
+    gpio_set_function(SDIO_CLK, GPIO_FUNC_PIO1); // TODO: Set function and THEN start SM to prevent glitches.
     gpio_set_function(SDIO_D0, GPIO_FUNC_PIO1);
     gpio_set_function(SDIO_D1, GPIO_FUNC_PIO1);
     gpio_set_function(SDIO_D2, GPIO_FUNC_PIO1);
     gpio_set_function(SDIO_D3, GPIO_FUNC_PIO1);
-
-    gpio_set_slew_rate(SDIO_CMD, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(SDIO_CLK, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(SDIO_D0, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(SDIO_D1, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(SDIO_D2, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(SDIO_D3, GPIO_SLEW_RATE_FAST);
 
     // Set up IRQ handler when DMA completes.
     irq_set_exclusive_handler(DMA_IRQ_1, rp2040_sdio_irq);

@@ -29,6 +29,7 @@ typedef volatile int64_t vs64;
 #define SDIO_D1  6
 #define SDIO_D2  7
 #define SDIO_D3  8
+#define SDIO_PIN_MASK ((1u<<SDIO_D3) | (1u<<SDIO_D2) | (1u<<SDIO_D1) | (1u<<SDIO_D0) | (1u<<SDIO_CMD) | (1u<<SDIO_CLK))
 
 #define PIN_RST     9
 #define PIN_CEB     10
