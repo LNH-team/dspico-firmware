@@ -171,10 +171,6 @@ static inline void earlyGpioInit(void)
     gpio_set_dir(PIN_IRQ, GPIO_OUT);
     gpio_disable_pulls(PIN_IRQ);
 
-    // SDIO CLK pin needs to be low before init.
-    gpio_put(SDIO_CLK, false);
-    gpio_set_dir(SDIO_CLK, true);
-
     // Set SDIO and NTRCARD pin drive strengths.
     // 4 mA is the default after reset. 2 mA is enough.
     gpio_set_drive_strength(SDIO_CLK, GPIO_DRIVE_STRENGTH_2MA);
@@ -244,6 +240,10 @@ static inline void earlyGpioInit(void)
     gpio_set_slew_rate(PIN_D6, GPIO_SLEW_RATE_FAST);
     gpio_set_slew_rate(PIN_D7, GPIO_SLEW_RATE_FAST);
 #endif
+
+    // SDIO CLK pin needs to be low before init.
+    gpio_put(SDIO_CLK, false);
+    gpio_set_dir(SDIO_CLK, true);
 }
 
 int __time_critical_func(main)()
