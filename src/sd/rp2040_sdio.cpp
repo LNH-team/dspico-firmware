@@ -781,7 +781,7 @@ void rp2040_sdio_init(int clock_divider)
     sm_config_set_out_shift(&cfg, false, true, 32);
     sm_config_set_in_shift(&cfg, false, true, 32);
     sm_config_set_clkdiv_int_frac(&cfg, clock_divider, 0);
-    sm_config_set_mov_status(&cfg, STATUS_TX_LESSTHAN, 2);
+    sm_config_set_mov_status(&cfg, STATUS_TX_LESSTHAN, 1);
 
     pio_sm_init(SDIO_PIO, SDIO_CMD_SM, g_sdio.pio_cmd_clk_offset, &cfg);
     pio_sm_set_consecutive_pindirs(SDIO_PIO, SDIO_CMD_SM, SDIO_CLK, 1, true);

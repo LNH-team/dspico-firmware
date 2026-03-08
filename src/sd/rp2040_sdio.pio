@@ -53,14 +53,11 @@
 .program sdio_cmd_clk
     .side_set 1
 
-    mov OSR, NULL       side 1 [D1]    ; Make sure OSR is full of zeros to prevent autopull
-
 wait_cmd:
-    mov Y, !STATUS      side 0 [D0]    ; Check if TX FIFO has data
-    jmp !Y wait_cmd     side 1 [D1]
+    mov Y, !STATUS      side 1 [D1]    ; Check if TX FIFO has data
+    jmp !Y wait_cmd     side 0 [D0]
 
 load_cmd:
-    out NULL, 32        side 0 [D0]    ; Load first word (trigger autopull)
     out X, 8            side 1 [D1]    ; Number of bits to send
     set pins, 1         side 0 [D0]    ; Initial state of CMD is high
     set pindirs, 1      side 1 [D1]    ; Set SDIO_CMD as output
