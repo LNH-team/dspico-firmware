@@ -244,6 +244,19 @@ static inline void earlyGpioInit(void)
     // SDIO CLK pin needs to be low before init.
     gpio_put(SDIO_CLK, false);
     gpio_set_dir(SDIO_CLK, true);
+
+    // Disable all unused GPIO inputs. Saves a little power.
+#if 1
+    uint32_t usedPins = NTRC_PIN_MASK | SDIO_PIN_MASK | DEV_UART_PIN_MASK;
+    for(uint32_t i = 0; i < NUM_BANK0_GPIOS; i++)
+    {
+        if(!(usedPins & 1u))
+        {
+            gpio_set_input_enabled(i, false);
+        }
+        usedPins >>= 1;
+    }
+#endif
 }
 
 int __time_critical_func(main)()
