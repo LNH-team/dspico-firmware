@@ -107,36 +107,41 @@ bool SdCard::TryInitialize()
 {
     u32 reply;
     sdio_status_t status;
-    
-    // Initialize at ~403.225 kHz clock speed
+
+    // Initialize at ~403.225 kHz.
     rp2040_sdio_init(62);
 
-    // Establish initial connection with the card
-    for (int retries = 0; retries < 5; retries++)
-    {
-        // sleep_us(1000);
-        reply = 0;
-        Cmd0GoIdleState();
-        status = Cmd8SendIfCond(0x1AA, reply);
+    // Send a minimum of 74 clock cycles before the first command.
+    // This delay assumes a clock rate of 403.225 kHz.
+    // The CMD/CLK state machine must continuously clock the card for this to work.
+    sleep_us(183);
 
-        if (status == SDIO_OK && reply == 0x1AA)
+    // Go into idle state.
+    Cmd0GoIdleState();
+
+    // Send interface/voltage support. Only SDv2 and up will respond.
+    // Voltage supplied (VHS) 2.7-3.6V plus check pattern.
+    status = Cmd8SendIfCond(0x1AA, reply);
+    if(status == SDIO_OK)
+    {
+        if(reply != 0x1AA)
         {
-            break;
+            return false;
         }
     }
-
-    if (reply != 0x1AA || status != SDIO_OK)
+    else if(status != SDIO_ERR_RESPONSE_TIMEOUT)
     {
         return false;
     }
 
-    // Send ACMD41 to begin card initialization and wait for it to complete
+    // Send ACMD41 to begin card initialization and wait for it to complete.
+    // 3.2-3.3V, XPC = Maximum Performance, HCS set if SEND_IF_COND didn't time out.
+    const u32 opCondArg = 0x10100000u | (status == SDIO_OK ? 1u<<30 : 0u);
     u32 start = millis();
     do
     {
         if (Cmd55AppCmd(0) != SDIO_OK ||
-            ACmd41SdSendOpCond(0x50100000, _sdioOcr) != SDIO_OK) // 3.2-3.3V voltage
-            // !checkReturnOk(rp2040_sdio_command_R1(ACMD41, 0xC0100000, &g_sdio_ocr)))
+            ACmd41SdSendOpCond(opCondArg, _sdioOcr) != SDIO_OK)
         {
             return false;
         }
@@ -145,27 +150,38 @@ bool SdCard::TryInitialize()
         {
             return false;
         }
-    } while (!(_sdioOcr & (1 << 31)));
+    } while (!(_sdioOcr & (1u<<31)));
 
-    // Get CID
+    // Check if the voltage is supported.
+    if(!(_sdioOcr & (1u<<20))) // 3.2-3.3V.
+    {
+    	return false;
+    }
+
+    // Get CID.
     if (Cmd2AllSendCid(_sdioCid) != SDIO_OK)
     {
         return false;
     }
 
-    // Get relative card address
+    // Get relative card address.
     if (Cmd3SendRelativeAddr(_sdioRca) != SDIO_OK)
     {
         return false;
     }
 
-    // Get CSD
+    // Increase to 25 MHz clock rate.
+    // SD spec note:
+    // We can increase the clock after end of identification state.
+    rp2040_sdio_init(1);
+
+    // Get CSD.
     if (Cmd9SendCsd(_sdioRca, _sdioCsd) != SDIO_OK)
     {
         return false;
     }
 
-    // Select card
+    // Select card.
     if (Cmd7SelectCard(_sdioRca) != SDIO_OK)
     {
         return false;
@@ -178,15 +194,12 @@ bool SdCard::TryInitialize()
         return false;
     }
 
-    // Set 4-bit bus mode
+    // Set 4-bit bus mode.
     if (Cmd55AppCmd(_sdioRca) != SDIO_OK ||
         ACmd6SetBusWidth(2) != SDIO_OK)
     {
         return false;
     }
-
-    // Increase to 25 MHz clock rate
-    rp2040_sdio_init(1);
 
     _lastSdSector = CalculateSdCapacity() - 1;
 

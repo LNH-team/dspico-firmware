@@ -128,9 +128,9 @@ static void initSd(void)
 {
     memset(&sFatFs, 0, sizeof(sFatFs));
 
-    //try mounting 16 times
+    //try mounting 3 times
     bool ok = false;
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 3; i++)
     {
         FRESULT mountResult = f_mount(&sFatFs, "0:", 1);
         if (mountResult == FR_OK)
