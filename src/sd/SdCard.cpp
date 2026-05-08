@@ -136,7 +136,7 @@ bool SdCard::TryInitialize()
 
     // Send ACMD41 to begin card initialization and wait for it to complete.
     // 3.2-3.3V, XPC = Maximum Performance, HCS set if SEND_IF_COND didn't time out.
-    const u32 opCondArg = 0x10100000u | (status == SDIO_OK ? 1u<<30 : 0u);
+    const u32 opCondArg = SD_ACMD41_XPC | SD_OCR_3_2_3_3V | (status == SDIO_OK ? SD_ACMD41_HCS : 0u);
     u32 start = millis();
     do
     {
@@ -150,10 +150,10 @@ bool SdCard::TryInitialize()
         {
             return false;
         }
-    } while (!(_sdioOcr & (1u<<31)));
+    } while (!(_sdioOcr & SD_OCR_READY));
 
     // Check if the voltage is supported.
-    if(!(_sdioOcr & (1u<<20))) // 3.2-3.3V.
+    if(!(_sdioOcr & SD_OCR_3_2_3_3V)) // 3.2-3.3V.
     {
     	return false;
     }
