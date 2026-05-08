@@ -208,9 +208,9 @@ static inline void earlyGpioInit(void)
     gpio_disable_pulls(SDIO_D3);
 #endif
 
-    gpio_pull_down(PIN_RST);
-    gpio_pull_up(PIN_CEB);
-    gpio_pull_up(PIN_WREB);
+    gpio_disable_pulls(PIN_RST);
+    gpio_disable_pulls(PIN_CEB);
+    gpio_disable_pulls(PIN_WREB);
     gpio_disable_pulls(PIN_D0);
     gpio_disable_pulls(PIN_D1);
     gpio_disable_pulls(PIN_D2);
@@ -219,7 +219,7 @@ static inline void earlyGpioInit(void)
     gpio_disable_pulls(PIN_D5);
     gpio_disable_pulls(PIN_D6);
     gpio_disable_pulls(PIN_D7);
-    gpio_pull_up(PIN_CS2);
+    gpio_disable_pulls(PIN_CS2);
 
     // Set SDIO and NTRCARD DAT pin slew rate.
     // Default slew rate after reset is slow. Good enough for 25 MHz.
