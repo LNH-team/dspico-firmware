@@ -8,6 +8,7 @@ pico_sdk_init()
 add_compile_definitions(DSpico
   PICO_STACK_SIZE=0x600
   PICO_CORE1_STACK_SIZE=0x400
+  PICO_CRT0_ALLOCATE_SPACERS=0 #flag required when building using pico sdk 2.0.0 and later
   ENABLE_R4_MODE
   #DSPICO_ENABLE_WRFUXXED # This macro enables the WRFUXXED exploit to work.
   # ENABLE_PREVENT_DSI_AUTOBOOT # meant to be used with WRFU, doesn't work properly on the 3ds

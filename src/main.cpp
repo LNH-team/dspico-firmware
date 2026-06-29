@@ -1,6 +1,7 @@
 #include "common.h"
 #include <string.h>
 #include <stdio.h>
+#include "hardware/clocks.h"
 #include "hardware/gpio.h"
 #include "hardware/dma.h"
 #include "hardware/structs/scb.h"
