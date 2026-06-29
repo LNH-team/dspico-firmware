@@ -170,6 +170,9 @@ const uint8_t ACMD23 = 0X17;
 /** SD_SEND_OP_COMD - Sends host capacity support information and
     activates the card's initialization process */
 const uint8_t ACMD41 = 0X29;
+/** SET_CLR_CARD_DETECT - Connect[1]/Disconnect[0] the 50 KOhm pull-up resistor
+    on CD/DAT3 (pin 1) of the card. */
+const uint8_t ACMD42 = 0X2A;
 //==============================================================================
 // CARD_STATUS
 /** The command's argument was out of the allowed range for this card. */
@@ -251,6 +254,29 @@ const uint8_t WRITE_MULTIPLE_TOKEN = 0XFC;
 const uint8_t DATA_RES_MASK = 0X1F;
 /** write data accepted token */
 const uint8_t DATA_RES_ACCEPTED = 0X05;
+//==============================================================================
+// 5.1 Operation Conditions Register (OCR).
+#define SD_OCR_2_7_2_8V (1UL << 15) // 2.7-2.8V.
+#define SD_OCR_2_8_2_9V (1UL << 16) // 2.8-2.9V.
+#define SD_OCR_2_9_3_0V (1UL << 17) // 2.9-3.0V.
+#define SD_OCR_3_0_3_1V (1UL << 18) // 3.0-3.1V.
+#define SD_OCR_3_1_3_2V (1UL << 19) // 3.1-3.2V.
+#define SD_OCR_3_2_3_3V (1UL << 20) // 3.2-3.3V.
+#define SD_OCR_3_3_3_4V (1UL << 21) // 3.3-3.4V.
+#define SD_OCR_3_4_3_5V (1UL << 22) // 3.4-3.5V.
+#define SD_OCR_3_5_3_6V (1UL << 23) // 3.5-3.6V.
+#define SD_OCR_S18A     (1UL << 24) // S18A: Switching to 1.8V Accepted. 0b: Continues current voltage signaling, 1b: Ready for switching signal voltage.
+#define SD_OCR_CO2T     (1UL << 27) // Over 2TB Card. CCS must also be 1 if this is 1.
+#define SD_OCR_UHS_II   (1UL << 29) // UHS-II Card Status. 0b: Non UHS-II Card, 1b: UHS-II Card.
+#define SD_OCR_CCS      (1UL << 30) // Card Capacity Status. 0b: SDSC, 1b: SDHC or SDXC.
+#define SD_OCR_READY    (1UL << 31) // Busy Status. 0b: On Initialization, 1b: Initialization Complete.
+//==============================================================================
+// Argument bits for SEND_OP_COND (ACMD41).
+// For voltage bits see OCR register above.
+#define SD_ACMD41_S18R (1UL << 24) // S18R: Switching to 1.8V Request. 0b: Use current signal voltage, 1b: Switch to 1.8V signal voltage.
+#define SD_ACMD41_HO2T (1UL << 27) // Over 2TB Supported Host. HCS must also be 1 if this is 1.
+#define SD_ACMD41_XPC  (1UL << 28) // SDXC Power Control. 0b: Power Saving, 1b: Maximum Performance.
+#define SD_ACMD41_HCS  (1UL << 30) // Host Capacity Support. 0b: SDSC Only Host, 1b: SDHC or SDXC Supported.
 //==============================================================================
 /**
  * \class CID

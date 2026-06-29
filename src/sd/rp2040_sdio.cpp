@@ -781,11 +781,10 @@ void rp2040_sdio_init(int clock_divider)
     sm_config_set_out_shift(&cfg, false, true, 32);
     sm_config_set_in_shift(&cfg, false, true, 32);
     sm_config_set_clkdiv_int_frac(&cfg, clock_divider, 0);
-    sm_config_set_mov_status(&cfg, STATUS_TX_LESSTHAN, 2);
+    sm_config_set_mov_status(&cfg, STATUS_TX_LESSTHAN, 1);
 
     pio_sm_init(SDIO_PIO, SDIO_CMD_SM, g_sdio.pio_cmd_clk_offset, &cfg);
     pio_sm_set_consecutive_pindirs(SDIO_PIO, SDIO_CMD_SM, SDIO_CLK, 1, true);
-    pio_sm_set_enabled(SDIO_PIO, SDIO_CMD_SM, true);
 
     // Data reception program
     g_sdio.pio_data_rx_offset = pio_add_program(SDIO_PIO, &sdio_data_rx_program);
@@ -810,8 +809,7 @@ void rp2040_sdio_init(int clock_divider)
     // This reduces input delay.
     // Because the CLK is driven synchronously to CPU clock,
     // there should be no metastability problems.
-    SDIO_PIO->input_sync_bypass |= (1 << SDIO_CLK) | (1 << SDIO_CMD)
-                                 | (1 << SDIO_D0) | (1 << SDIO_D1) | (1 << SDIO_D2) | (1 << SDIO_D3);
+    SDIO_PIO->input_sync_bypass |= SDIO_PIN_MASK;
 
     // Redirect GPIOs to PIO
     gpio_set_function(SDIO_CMD, GPIO_FUNC_PIO1);
@@ -821,12 +819,8 @@ void rp2040_sdio_init(int clock_divider)
     gpio_set_function(SDIO_D2, GPIO_FUNC_PIO1);
     gpio_set_function(SDIO_D3, GPIO_FUNC_PIO1);
 
-    gpio_set_slew_rate(SDIO_CMD, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(SDIO_CLK, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(SDIO_D0, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(SDIO_D1, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(SDIO_D2, GPIO_SLEW_RATE_FAST);
-    gpio_set_slew_rate(SDIO_D3, GPIO_SLEW_RATE_FAST);
+    // Start command & clock state machine.
+    pio_sm_set_enabled(SDIO_PIO, SDIO_CMD_SM, true);
 
     // Set up IRQ handler when DMA completes.
     irq_set_exclusive_handler(DMA_IRQ_1, rp2040_sdio_irq);
