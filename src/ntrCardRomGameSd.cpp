@@ -81,6 +81,13 @@ extern "C" void __scratch_y("cpu0") ntrc_gameGetSdStatCmd0(ntr_rom_emu_t* romEmu
     }
 }
 
+extern "C" void __scratch_y("cpu0") ntrc_gameGetSdSectCntCmd0(ntr_rom_emu_t* romEmu, u32 word, pio_hw_t* pio)
+{
+    ntrc_beginWrite(pio, 4);
+    ntrc_writeWord(pio, gSdCard.GetNumSectors());
+    ntrc_finishGameNoScrambleCmd0(romEmu);
+}
+
 extern "C" void __scratch_y("cpu0") ntrc_gameGetSdDataCmd0(ntr_rom_emu_t* romEmu, u32 word, pio_hw_t* pio)
 {
     ntrc_beginWrite(pio, 512);

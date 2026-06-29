@@ -79,6 +79,10 @@ public:
     /// @return The number of sectors that have been completed in the current read or write.
     u32 GetSectorsCompleted() const { return _sectorsCompleted; }
 
+    /// @brief Returns the number of sectors, if the _state is not idle the function will return 0. 
+    /// @return The number of sectors, each sector is 0x200 bytes. 
+    u32 GetNumSectors() const { return _state != State::Idle ? 0 : (_lastSdSector + 1); }
+
     /// @brief Reads the given number of sectors from the given \p sector to the \p dst buffer.
     ///        This function blocks until the read is complete.
     /// @param dst The destination buffer.
