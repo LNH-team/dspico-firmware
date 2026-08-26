@@ -19,6 +19,12 @@ void pwr_disableUsbPowerSaving(void);
 /// @brief Enables USB power saving. USB can no longer be used.
 void pwr_enableUsbPowerSaving(void);
 
+/// @brief Disables the SysTick in power saving mode. The SysTick register will no longer be updated.
+void pwr_disableSysTickClock();
+
+/// @brief Enables the SysTick in power saving mode. The SysTick register will be updated.
+void pwr_enableSysTickClock();
+
 #ifdef __cplusplus
 }
 #endif

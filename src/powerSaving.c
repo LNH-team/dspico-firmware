@@ -4,6 +4,7 @@
 #include "hardware/structs/scb.h"
 #include "hardware/structs/rosc.h"
 #include "hardware/structs/syscfg.h"
+#include "hardware/structs/systick.h"
 
 static void stopUnusedClocks(void)
 {
@@ -21,7 +22,7 @@ static void stopUnusedClocks(void)
     tmp |= ROSC_CTRL_ENABLE_VALUE_DISABLE << ROSC_CTRL_ENABLE_LSB;
     hw_clear_bits(&rosc_hw->status, ROSC_STATUS_BADWRITE_BITS);
     rosc_hw->ctrl = tmp;
-    clocks_hw->wake_en0 &= ~(
+    hw_clear_bits(&clocks_hw->wake_en0,
         CLOCKS_WAKE_EN0_CLK_ADC_ADC_BITS |
         CLOCKS_WAKE_EN0_CLK_SYS_ADC_BITS |
         CLOCKS_WAKE_EN0_CLK_SYS_I2C0_BITS |
@@ -35,7 +36,7 @@ static void stopUnusedClocks(void)
         CLOCKS_WAKE_EN0_CLK_SYS_SPI1_BITS |
         CLOCKS_WAKE_EN0_CLK_SYS_ROSC_BITS |
         CLOCKS_WAKE_EN0_CLK_SYS_PLL_USB_BITS);
-    clocks_hw->wake_en1 &= ~(
+    hw_clear_bits(&clocks_hw->wake_en1,
         CLOCKS_WAKE_EN1_CLK_SYS_UART0_BITS |
         CLOCKS_WAKE_EN1_CLK_PERI_UART0_BITS |
         CLOCKS_WAKE_EN1_CLK_SYS_UART1_BITS |
@@ -47,7 +48,11 @@ static void stopUnusedClocks(void)
 static void initDeepSleep(void)
 {
     // set clocks enabled during deep sleep
-    clocks_hw->sleep_en0 = CLOCKS_SLEEP_EN0_CLK_SYS_PIO0_BITS;
+	// we don't change the satate of the systick clock because that is handled
+	// by the ntrcard protocol
+    hw_write_masked(&clocks_hw->sleep_en0,
+        CLOCKS_SLEEP_EN0_CLK_SYS_PIO0_BITS,
+        ~CLOCKS_SLEEP_EN0_CLK_SYS_CLOCKS_BITS);
     clocks_hw->sleep_en1 = 0x0;
 
     // enable deep sleep
@@ -109,4 +114,14 @@ void pwr_enableUsbPowerSaving(void)
         CLOCKS_SLEEP_EN1_CLK_USB_USBCTRL_BITS |
         CLOCKS_SLEEP_EN1_CLK_SYS_USBCTRL_BITS);
     hw_set_bits(&syscfg_hw->mempowerdown, SYSCFG_MEMPOWERDOWN_USB_BITS);
+}
+
+void pwr_disableSysTickClock(void)
+{
+    hw_clear_bits(&clocks_hw->sleep_en0, CLOCKS_SLEEP_EN0_CLK_SYS_CLOCKS_BITS);
+}
+
+void pwr_enableSysTickClock(void)
+{
+    hw_set_bits(&clocks_hw->sleep_en0, CLOCKS_SLEEP_EN0_CLK_SYS_CLOCKS_BITS);
 }
