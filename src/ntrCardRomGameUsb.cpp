@@ -1,6 +1,6 @@
 #include "common.h"
 #include "hardware/structs/usb.h"
-#include "tinyusb/dcd.h"
+#include "device/dcd.h"
 #include "ntrCardRom.h"
 #include "ntrCardRomGameNoScramble.h"
 #include "usbEventQueue.h"
@@ -110,7 +110,7 @@ extern "C" void __scratch_y("cpu0") ntrc_gameReqUsbCommandCmd1(ntr_rom_emu_t* ro
             u32 endpoint = (romEmu->cmd0 >> 8) & 0xFF;
             u32 offset = romEmu->cmd0 & 1;
             u8* buffer = &sUsbDataBuffers[(endpoint & ~0x80) * 2 + (endpoint >> 7)][offset * 512];
-            dcd_edpt_xfer(0, endpoint, buffer, byteCount);
+            dcd_edpt_xfer(0, endpoint, buffer, byteCount, true);
             break;
         }
         case USB_SUB_COMMAND_INTERRUPT_ENABLE:
@@ -158,7 +158,7 @@ static void __scratch_y("cpu0") usbWritePayloadComplete(ntr_rom_emu_t* romEmu)
         {
             byteCount = 512;
         }
-        dcd_edpt_xfer(0, endpoint, buffer, byteCount);
+        dcd_edpt_xfer(0, endpoint, buffer, byteCount, true);
     }
 }
 
@@ -171,7 +171,7 @@ extern "C" void __scratch_y("cpu0") ntrc_gameWriteUsbDataCmd1(ntr_rom_emu_t* rom
     {
         ntrc_noPayload(pio);
         ntrc_finishGameNoScrambleCmd1(romEmu);
-        dcd_edpt_xfer(0, endpoint, buffer, 0);
+        dcd_edpt_xfer(0, endpoint, buffer, 0, true);
     }
     else
     {
