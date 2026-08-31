@@ -33,7 +33,11 @@
   #include "rp2040_usb.h"
 
   #include "device/dcd.h"
+
   #include "host/hcd.h"
+
+  #include "common.h"
+  #include "usbEventQueue.h"
 
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF PROTOTYPE
@@ -261,7 +265,7 @@ void rp2usb_xfer_start(hw_endpoint_t *ep, io_rw_32 *ep_reg, io_rw_32 *buf_reg, u
     if (ep->remaining_len == 0) {
       const uint16_t xferred_len = ep->xferred_len;
       rp2usb_reset_transfer(ep);
-      dcd_event_xfer_complete(0, ep->ep_addr, xferred_len, XFER_RESULT_SUCCESS, false);
+      usb_tryEnqueueEvent32Bit(USB_EVENT_XFER_COMPLETE | ep->ep_addr | (xferred_len << 8));
       hw_endpoint_lock_update(ep, -1);
       return;
     }

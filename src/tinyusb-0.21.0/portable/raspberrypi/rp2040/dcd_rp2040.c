@@ -38,6 +38,9 @@
 
 #include "device/dcd.h"
 
+#include "common.h"
+#include "usbEventQueue.h"
+
 // Current implementation force vbus detection as always present, causing device think it is always plugged into host.
 // Therefore, it cannot detect disconnect event, mistaken it as suspend.
 // Note: won't work if change to 0 (for now)
@@ -182,7 +185,7 @@ static void __tusb_irq_path_func(handle_hw_buff_status)(void) {
       if (rp2usb_xfer_continue(ep, ep_reg, buf_reg, buf_id, dir == TUSB_DIR_OUT)) {
         const uint16_t xferred_len = ep->xferred_len;
         rp2usb_reset_transfer(ep);
-        dcd_event_xfer_complete(0, ep->ep_addr, xferred_len, XFER_RESULT_SUCCESS, true);
+        usb_tryEnqueueEvent32Bit(USB_EVENT_XFER_COMPLETE | ep->ep_addr | (xferred_len << 8));
       }
     }
   }
@@ -224,7 +227,7 @@ static void __tusb_irq_path_func(dcd_rp2040_irq)(void) {
     e15_last_sof = time_us_32();                           // timing critical
   #endif
 
-    dcd_event_sof(0, sof_count, true);
+    usb_tryEnqueueEvent32Bit(USB_EVENT_SOF | sof_count);
   }
 
   // xfer events are handled before setup req. So if a transfer completes immediately
@@ -235,12 +238,16 @@ static void __tusb_irq_path_func(dcd_rp2040_irq)(void) {
 
   if (status & USB_INTS_SETUP_REQ_BITS) {
     const uint8_t *setup = remove_volatile_cast(const uint8_t *, &usb_dpram->setup_packet);
+    const tusb_control_request_t *req = (const tusb_control_request_t *) setup;
 
     // reset pid to both 1 (data and ack)
     reset_ep0();
 
     // Pass setup packet to tiny usb
-    dcd_event_setup_received(0, setup, true);
+    usb_tryEnqueueEvent64Bit(
+        USB_EVENT_SETUP_RECEIVED | ((req->wLength & 0x1FFF) << 16) |
+            ((req->bmRequestType_bit.direction) << 29) | req->wIndex,
+        req->wValue | (req->bRequest << 16) | ((req->bmRequestType & 0x7F) << 24));
     usb_hw_clear->sie_status = USB_SIE_STATUS_SETUP_REC_BITS;
   }
 
@@ -304,7 +311,7 @@ static void __tusb_irq_path_func(dcd_rp2040_irq)(void) {
       // Connected: nothing to do
     } else {
       // Disconnected
-      dcd_event_bus_signal(0, DCD_EVENT_UNPLUGGED, true);
+      usb_tryEnqueueEvent32Bit(USB_EVENT_UNPLUGGED);
     }
     usb_hw_clear->sie_status = USB_SIE_STATUS_CONNECTED_BITS;
   }
@@ -315,7 +322,7 @@ static void __tusb_irq_path_func(dcd_rp2040_irq)(void) {
     pico_trace("BUS RESET\r\n");
     usb_hw->dev_addr_ctrl = 0;
     reset_non_control_endpoints();
-    dcd_event_bus_reset(0, TUSB_SPEED_FULL, true);
+    usb_tryEnqueueEvent32Bit(USB_EVENT_BUS_RESET);
     usb_hw_clear->sie_status = USB_SIE_STATUS_BUS_RESET_BITS;
 
   #if TUD_OPT_RP2040_USB_DEVICE_ENUMERATION_FIX
@@ -335,12 +342,12 @@ static void __tusb_irq_path_func(dcd_rp2040_irq)(void) {
    * being disconnected and suspended.
    */
   if (status & USB_INTS_DEV_SUSPEND_BITS) {
-    dcd_event_bus_signal(0, DCD_EVENT_SUSPEND, true);
+    usb_tryEnqueueEvent32Bit(USB_EVENT_SUSPEND);
     usb_hw_clear->sie_status = USB_SIE_STATUS_SUSPENDED_BITS;
   }
 
   if (status & USB_INTS_DEV_RESUME_FROM_HOST_BITS) {
-    dcd_event_bus_signal(0, DCD_EVENT_RESUME, true);
+    usb_tryEnqueueEvent32Bit(USB_EVENT_RESUME);
     usb_hw_clear->sie_status = USB_SIE_STATUS_RESUME_BITS;
   }
 
@@ -517,6 +524,37 @@ void dcd_edpt_close_all(uint8_t rhport) {
   (void) rhport;
   // may need to use EP Abort
   reset_non_control_endpoints();
+}
+
+// DSpico local addition. Upstream dropped per-endpoint close for this port, but
+// the DSpico card protocol exposes it as a command (E8 0B) and the host driver
+// uses it when disabling an endpoint.
+void dcd_edpt_close(uint8_t rhport, uint8_t ep_addr) {
+  (void) rhport;
+  const uint8_t    epnum = tu_edpt_number(ep_addr);
+  const tusb_dir_t dir   = tu_edpt_dir(ep_addr);
+  hw_endpoint_t   *ep    = hw_endpoint_get(epnum, dir);
+  io_rw_32        *ep_reg = get_ep_ctrl(epnum, dir);
+
+  // EP0 has no endpoint control register; its buffers are fixed and always on.
+  if (ep_reg != NULL) {
+    *ep_reg = 0;
+  }
+  *get_buf_ctrl(epnum, dir) = 0;
+  tu_memclr(ep, sizeof(*ep));
+
+  // Reclaim the DPRAM allocation once no non-control endpoint holds any.
+  bool reclaim = true;
+  for (uint8_t i = 1; i < USB_MAX_ENDPOINTS; i++) {
+    if (hw_endpoint_get(i, TUSB_DIR_OUT)->dpram_buf != NULL ||
+        hw_endpoint_get(i, TUSB_DIR_IN)->dpram_buf != NULL) {
+      reclaim = false;
+      break;
+    }
+  }
+  if (reclaim) {
+    hw_buffer_ptr = &usb_dpram->epx_data[0];
+  }
 }
 
 bool dcd_edpt_xfer(uint8_t rhport, uint8_t ep_addr, uint8_t *buffer, uint16_t total_bytes, bool is_isr) {
