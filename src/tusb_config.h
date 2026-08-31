@@ -105,3 +105,6 @@
 #endif
 
 #endif /* _TUSB_CONFIG_H_ */
+// DSpico exposes per-endpoint close as a card command, so keep the dcd API for
+// it declared even though the RP2040 port no longer advertises it upstream.
+#define TUP_DCD_EDPT_CLOSE_API
