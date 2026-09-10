@@ -35,8 +35,11 @@ static void setRomToDsiRom(void)
 
 static void resetNtrCard(void)
 {
-    ntrc_resetUsb();
+    // Power saving must be lifted BEFORE ntrc_resetUsb(), which writes USB
+    // registers - otherwise those writes can land while USBCTRL clocks and
+    // DPRAM are still gated.
     pwr_disableAfterBootPowerSaving();
+    ntrc_resetUsb();
     ntrc_setNormalMode();
     gNtrRomEmu.securePhase1 = false;
     gNtrRomEmu.cmdScramble = false;

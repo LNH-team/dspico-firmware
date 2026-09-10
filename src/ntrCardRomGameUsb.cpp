@@ -15,6 +15,18 @@ extern "C" void __scratch_y("cpu0") ntrc_gameReqUsbCommandCmd1(ntr_rom_emu_t* ro
     ntrc_noPayload(pio);
     ntrc_finishGameNoScrambleCmd1(romEmu);
     u32 subCommand = (romEmu->cmd0 >> 16) & 0xFF;
+
+    // Everything except INIT touches usb_hw, which is only safe once INIT has
+    // ungated the USB clocks. If the DS side and the firmware get out of step
+    // across a reset - a stale card command, or INTERRUPT_ENABLE arriving
+    // before INIT - an unguarded access stalls the APB bus and wedges the
+    // cartridge. Dropping the command instead turns that lockup into a no-op.
+    // Safe to return here: the card-protocol handshake above already completed.
+    if (subCommand != USB_SUB_COMMAND_INIT && !sUsbActive)
+    {
+        return;
+    }
+
     switch (subCommand)
     {
         case USB_SUB_COMMAND_INIT:
@@ -98,6 +110,12 @@ extern "C" void __scratch_y("cpu0") ntrc_gameReqUsbCommandCmd1(ntr_rom_emu_t* ro
             dcd_deinit(0);
             usb_clearEventQueue();
             pwr_enableUsbPowerSaving();
+            // Must clear this: pwr_enableUsbPowerSaving() gates CLK_SYS_USBCTRL
+            // and powers down the USB DPRAM, so if the flag stays set the next
+            // ntrc_resetUsb() issues dcd_disconnect() as an APB access to a
+            // clock-gated peripheral, which never completes and hangs core 0
+            // inside the GPIO IRQ handler.
+            sUsbActive = false;
             break;
         }
         case USB_SUB_COMMAND_BEGIN_TRANSFER:

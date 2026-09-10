@@ -396,7 +396,22 @@ bool dcd_init(uint8_t rhport, const tusb_rhport_init_t* rh_init) {
   usb_hw->pwr = USB_USB_PWR_VBUS_DETECT_BITS | USB_USB_PWR_VBUS_DETECT_OVERRIDE_EN_BITS;
 #endif
 
-  irq_add_shared_handler(USBCTRL_IRQ, dcd_rp2040_irq, PICO_SHARED_IRQ_HANDLER_HIGHEST_ORDER_PRIORITY);
+  // DSPICO: exclusive rather than shared.
+  //
+  // irq_add_shared_handler() is not sound for this entry point. Nothing else
+  // in this firmware uses USBCTRL_IRQ, and the shared variant consumes one of
+  // only PICO_MAX_SHARED_IRQ_HANDLERS (4) global slots per call, with no
+  // deduplication. The matching irq_remove_handler() lives solely in
+  // dcd_deinit(), which is not on the path taken when the DS resets, so each
+  // reset with USB attached consumes another slot. Exhausting them trips
+  // hard_assert inside the PIO0 ISR, which takes card emulation down with it
+  // and stays down until the RP2040 loses power.
+  //
+  // irq_set_exclusive_handler consumes no slot and explicitly permits
+  // re-registering the same handler, so a repeated INIT is a no-op. It also
+  // makes dcd_deinit()'s irq_remove_handler() safe to call from an ISR, since
+  // the exclusive path has no exception-context assert.
+  irq_set_exclusive_handler(USBCTRL_IRQ, dcd_rp2040_irq);
 
   // Init control endpoints
   tu_memclr(hw_endpoints[0], 2 * sizeof(hw_endpoint_t));
