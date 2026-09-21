@@ -10,11 +10,14 @@ add_compile_definitions(DSpico
   PICO_CORE1_STACK_SIZE=0x400
   ENABLE_R4_MODE
   #DSPICO_ENABLE_WRFUXXED # This macro enables the WRFUXXED exploit to work.
+  #ENABLE_STATUS_LEDS # This macro drives the two board status LEDs: blue for SD card activity, red when the firmware stops on a fault. Off by default, lighting them draws from the DS battery.
   # ENABLE_PREVENT_DSI_AUTOBOOT # meant to be used with WRFU, doesn't work properly on the 3ds
 )
 
 add_executable(DSpico
   src/main.cpp
+  src/led.cpp
+  src/led.h
   src/common.h
   src/romData.S
   src/romData.h

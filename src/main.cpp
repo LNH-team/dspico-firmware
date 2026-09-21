@@ -19,6 +19,7 @@
 #include "pico/bootrom.h"
 #include "hardware/xosc.h"
 #include "powerSaving.h"
+#include "led.h"
 
 static u32 sProgramOffset;
 FATFS sFatFs;
@@ -257,11 +258,21 @@ static inline void earlyGpioInit(void)
         usedPins >>= 1;
     }
 #endif
+
+    ledInit();
 }
 
 int __time_critical_func(main)()
 {
+#ifdef ENABLE_STATUS_LEDS
+    // Names the build and its pins, so a flashed board and a stray uf2 can both be
+    // identified with picotool rather than only by the docs.
+    bi_decl(bi_program_description("Ntr card emulator (board status LEDs)"));
+    bi_decl(bi_1pin_with_name(PIN_LED_R, "Status led red (fault)"));
+    bi_decl(bi_1pin_with_name(PIN_LED_B, "Status led blue (sd activity)"));
+#else
     bi_decl(bi_program_description("Ntr card emulator"));
+#endif
     bi_decl(bi_pin_mask_with_name(0xFF000, "Ntr card D0-D7"));
     bi_decl(bi_1pin_with_name(PIN_IRQ, "Ntr card irq"));
     bi_decl(bi_1pin_with_name(PIN_CEB, "Ntr card ceb (rom enable)"));
@@ -360,13 +371,23 @@ int __time_critical_func(main)()
 
     pwr_initPowerSaving();
 
+    // The blue LED is driven from led.cpp, off counters that SdCard bumps when a
+    // transfer starts. It is deliberately NOT sampled from the card state here:
+    // the blocking path (r4 rom reads, FatFs writes) begins and completes inside
+    // ntrc_gameR4Update() below, so a sample taken in this loop always sees an
+    // idle card and would show nothing at all for that whole mode.
+
     while (1)
     {
+        ledUpdate();
+
         gSdCard.Update();
         gSdCard.Update();
     #ifdef ENABLE_R4_MODE
         ntrc_gameR4Update();
     #endif
+
+        ledPrepareForSleep();
         __wfi();
     }
 }

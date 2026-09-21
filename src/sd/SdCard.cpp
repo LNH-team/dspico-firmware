@@ -4,6 +4,7 @@
 #include "rp2040_sdio.h"
 #include "SdCardInfo.h"
 #include "SdCard.h"
+#include "../led.h"
 
 #define SEQUENTIAL_READ_TIMEOUT_MICROSECONDS    1000000 // 1 second
 
@@ -287,6 +288,13 @@ void SdCard::StateReadBegin()
         return;
     }
 
+    // Every read in the firmware passes through here, the interrupt driven ones
+    // and the blocking ones alike, once the early-outs above have let it through,
+    // so this is where the LED sees all of them. It is counted here and not in
+    // TryBeginReadSectors on purpose: that one is inline in the header and lands
+    // inside the __scratch_y card handlers, and SCRATCH_Y is also where the core
+    // 0 stack lives, with a few hundred bytes to spare (see led.h).
+    ledNotifySdRead();
     u32 sdAddress = startSector;
     if (!IsSdhcCard())
     {
@@ -413,6 +421,8 @@ void SdCard::StateWriteBegin()
         return;
     }
 
+    // See StateReadBegin: counted here, out of the __scratch_y handlers.
+    ledNotifySdWrite();
     u32 sdAddress = startSector;
     if (!IsSdhcCard())
     {

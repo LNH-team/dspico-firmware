@@ -57,6 +57,7 @@ The `CMakeList.txt` file contains a couple of options that you can configure.
    * `ENABLE_R4_MODE` - Enables R4 emulation. This allows you to use R4 software, such as the Wood R4 kernel. As R4 emulation can be used together with regular DSpico software, it can usually be kept enabled.
       * Note that to be able to use R4 software, your SD card must be at most 4 GB, or have a single partition in the first 4 GB of the SD card. R4 card commands cannot address SD sectors above 4 GB!
    * `DSPICO_ENABLE_WRFUXXED` - Enables emulation of the IS-SPI-USB-ADAPTER to support the WRFUxxed exploit. This requires <code>uartBufv060.bin</code> to be placed in the `data/` folder.
+   * `ENABLE_STATUS_LEDS` - Drives the two board status LEDs, which are otherwise left dark: blue blinks on SD card activity, and red comes on when the firmware stops on a fault, which otherwise freezes with no visible sign. It is off by default because lighting them draws from the DS battery.
    * `ENABLE_PREVENT_DSI_AUTOBOOT` - Experimental feature that prevents DSi consoles from autobooting when the autoboot flag is set. It was intended to be used with WRFU Tester, which has the autoboot flag set. It is generally not recommended to use this, as it does not work properly with the 3DS and has not been tested much.
 
 ### Setting up the rom(s)

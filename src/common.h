@@ -52,6 +52,12 @@ typedef volatile int64_t vs64;
 
 #define PIN_USB_VBUS    24
 
+// Board status LEDs (see the pinout in the dspico-hardware repo). The stock
+// firmware never drives these, so they stay dark. Both are active high.
+// Everything that drives them lives in led.h.
+#define PIN_LED_R       27
+#define PIN_LED_B       28
+
 #define PIN_DEV_TX0     0
 #define PIN_DEV_RX0     1
 #define DEV_UART_PIN_MASK  ((1u << PIN_DEV_RX0) | (1u << PIN_DEV_TX0))
